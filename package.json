@@ -1,0 +1,18 @@
+{
+    "name": "WebSpace"
+  , "version": "0.0.1"
+  , "author": {
+      "name": "Willson Haw"
+    , "email": "willsonh@iqmetrix.com"
+  }
+  , "private": true
+  , "dependencies": {
+      "express": "2.5.8"
+    , "jade": ">= 0.0.1"
+    , "socket.io": "*"
+    , "sylvester": "*"
+  }
+  , "engines": {
+      "node": "0.6.16"
+  }
+}
