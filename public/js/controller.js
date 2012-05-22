@@ -1,11 +1,10 @@
 $(document).ready(function() {
     var socket = io.connect('/client');
-    var id = $("#clientId").val();
+    var serverId = $("#serverId").val();
     var name = $("#clientName").val();
 
     var publish = function(action, message) {
         var obj = {
-            id: id,
             message: message
         };
 
@@ -38,6 +37,6 @@ $(document).ready(function() {
     });
 
     socket.on('connect', function () {
-        socket.emit('init_player', id);
+        socket.emit('join', { name: name, server: serverId });
     });
 });

@@ -1,8 +1,8 @@
-﻿
+
 !!! 5
 html
     head
-        title Create Your Nub
+        title Servers
         meta(name='viewport', content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no')
         meta(name='viewport', content='target-densitydpi=device-dpi')
         meta(name='apple-mobile-web-app-capable', content='yes')
@@ -12,16 +12,22 @@ html
         link(rel='stylesheet', href='/css/bootstrap.css')
 
     body
-        form#create-form.well.form-horizontal(method='POST', action='/join')
+        form#server-form.well.form-horizontal(method='POST', action='/servers')
             fieldset
-                legend Create Your Nub
+                legend Select a Server
                 div.control-group
-                    label.control-label(for='CharName') Character Name
+                    label.control-label(for='servers') Servers
                     div.controls
-                        input#CharName.input-large(name='CharName', type='text', autocomplete='off')
+                        select#servers.input-large(name='servers', autocomplete='off')
+                            option(value='0') Create A Server
+
+                div.control-group
+                    label.control-label(for='server-name') Server Name
+                    div.controls
+                        input#server-name.input-large(name='server-name', type='text', autocomplete='off')
 
                 div.form-actions
-                    input#SubmitForm.btn.btn-primary(type='submit', value='Fight!')
+                    input#submit.btn.btn-primary(type='submit', value='Submit')
 
         script(src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js', type='text/javascript')
-        //script(src='/javascripts/register.js', type='text/javascript')
+        script(src='/js/servers.js', type='text/javascript')

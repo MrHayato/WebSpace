@@ -14,7 +14,7 @@ html
 
     body
         input#clientName(type='hidden', value='#{player.name}')
-        input#clientId(type='hidden', value='#{player.id}')
+        input#serverId(type='hidden', value='#{player.server}')
         
         div#help
             <p>Hold your device sideways to use the controller</p>
@@ -28,8 +28,8 @@ html
                 div.health-value
                     span.health-text 100%
 
-        script(src='/javascripts/libs/jquery-1.7.2.min.js', type='text/javascript')
-        script(src='/javascripts/libs/socket.io.min.js', type='text/javascript')
-        script(src='/javascripts/libs/kinetic-3.9.4.min.js', type='text/javascript')
-        script(src='/javascripts/libs/virtualjoystick.js', type='text/javascript')
-        script(src='/javascripts/controller.js', type='text/javascript')
+        script(src='/js/libs/jquery-1.7.2.min.js', type='text/javascript')
+        script(src='/js/libs/socket.io.min.js', type='text/javascript')
+        script(src='/js/libs/kinetic-3.9.4.min.js', type='text/javascript')
+        script(src='/js/libs/virtualjoystick.js', type='text/javascript')
+        script(src='/js/controller.js', type='text/javascript')

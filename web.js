@@ -1,18 +1,15 @@
-var Player = require('./lib/player.js');
+var express = require('express'),
+    socketIO = require('socket.io'),
+    Constants = require('./js/constants'),
+    Server = require('./js/server');
 
-var players = {};
+var servers = {};
 
-var FPS = 30;
-var PORT = process.env.PORT || 8899;
-var SESSION_SECRET = 'Some Secret Session';
-
-var express = require('express');
 var app = express.createServer();
 app.use(express.cookieParser());
 app.use(express.bodyParser());
-app.use(express.session({ secret: SESSION_SECRET }));
 app.use(express.static(__dirname + '/public'));
-var io = require("socket.io").listen(app);
+var io = socketIO.listen(app);
 
 io.configure(function () {
     io.set("transports", ["xhr-polling"]);
@@ -20,95 +17,85 @@ io.configure(function () {
     io.disable("log");
 });
 
-/* Globals */
-var screenSize = { width: 500, height: 500 };
-
-/* Endpoints for the Web Controller */
+/* Endpoints for the Clients */
 app.get('/join', function (req, res) {
-    res.render('register.jade', { layout: false });
+    res.render('./client/register.jade', { layout: false });
 });
 
 app.post('/join', function (req, res) {
-    var id = Object.keys(players).length + 1;
+    var name = req.param('char-name');
+    var serverId = req.param('servers');
+    var server = servers[serverId];
 
-    var player = new Player(id, req.param('CharName'));
-
-    players[id] = player;
-    console.log("Added new player, " + id);
-    res.render('controller.jade', { player: player, layout: false });
+    console.log("New player '" + name + "' joined the '" + server.name + "' server.");
+    res.render('./client/controller.jade', { player: { name: name, server: serverId }, layout: false });
 });
 
-/* Endpoints for the Game Screen */
+/* Endpoints for the Servers */
+app.get('/servers', function (req, res) {
+    var s = [];
+
+    for (var id in servers) {
+        s.push({ id: id, name: servers[id].name });
+    };
+
+    console.log(s);
+    res.send(s);
+});
+
+app.post('/servers', function (req, res) {
+    var serverId = parseInt(req.param('servers'));
+    var serverName = req.param('server-name');
+    var server = {};
+
+    if (serverId === 0) {
+        server.name = serverName;
+        server.id = serverId;
+    } else {
+        server.name = servers[serverId].name;
+        server.id = servers[serverId].id;
+    }
+
+    res.render('server/game.jade', { server: server, layout: false });
+});
+
 app.get('/', function (req, res) {
-    res.render('game.jade', { layout: false });
+    res.render('server/servers.jade', { layout: false });
 });
 
-app.listen(PORT);
+app.listen(Constants.SERVER_PORT);
 
 /* Server Sockets */
 var serverSockets = io
     .of('/server')
     .on('connection', function(socket) {
-        var numConnections = Object.keys(serverSockets.sockets).length;
-        console.log('Server connection: Total server connections: ' + numConnections);
+        socket.on('join', function(settings) {
+            var serverId = parseInt(settings.id);
+            if (serverId === 0) {
+                var server = new Server(settings.name, settings.screenSize, socket);
+                server.run();
 
-        socket.on('init', function(settings) {
-            console.log('Initializing game...');
-            players = {};
-            screenSize = settings.screenSize;
+                servers[server.id] = server;
+                socket.emit('onJoin', { id: server.id, name: server.name });
+
+                var numServers = Object.keys(servers).length;
+                console.log('Server Created: Total # of servers: ' + numServers);
+            } else {
+                var server = servers[serverId];
+                server.serverJoined(socket);
+                socket.emit('onJoin', { id: server.id, name: server.name });
+            }
         });
     });
 
-/* Client Sockets */
+///* Client Sockets */
 var playerSockets = io
     .of('/client')
     .on('connection', function(socket) {
-        socket.on('init_player', function(id) {
-            var player = players[id];
-            var options = {
-                screenSize: screenSize,
-                socket: socket
-            };
+        socket.on('join', function(settings) {
+            var server = servers[parseInt(settings.server)];
+            server.playerJoined(settings.name, socket);
 
-            if (player) {
-                player.initialize(options);
-            }
-
-            console.log("Initialized player: " + id);
-        });
-
-        socket.on('move', function(message) {
-            var player = players[message.id];
-
-            if (!player) {
-                console.log('Unable to find player with id ' + message.id);
-                return;
-            }
-
-            if (message.message === "up") {
-                player.stop();
-            } else if (message.message === "down") {
-                player.start();
-            } else {
-                player.move(message.message);
-            }
+            console.log("Initialized player: " + settings.name + " (" + socket.id + ")");
         });
     });
-
-setInterval(function() {
-    var updateObj = [];
-
-    //Call player update
-    for (var playerId in players) {
-        var player = players[playerId];
-
-        if (player.initialized()) {
-            player.update();
-            updateObj.push(player.toJSON());
-        }
-    }
-
-    serverSockets.emit('update', {
-        players: updateObj
-    });
-}, 1000/FPS);
