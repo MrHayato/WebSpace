@@ -23,7 +23,7 @@ module.exports = Entity = cls.Class.extend({
                 this.position = $V([0, this.position.e(Constants.Y)]);
             if (this.position.e(Constants.Y) < 0)
                 this.position = $V([this.position.e(Constants.X), this._screenSize.height]);
-            else if (this.position.e(Constants.Y) > this._screenSize.width)
+            else if (this.position.e(Constants.Y) > this._screenSize.height)
                 this.position = $V([this.position.e(Constants.X), 0]);
         }
     }

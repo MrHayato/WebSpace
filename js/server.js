@@ -1,4 +1,5 @@
 var cls = require('./lib/class'),
+    Bison = require('bison'),
     Constants = require('./constants'),
     Player = require('./player');
 
@@ -54,12 +55,14 @@ module.exports = Server = cls.Class.extend({
             for (var i = 0; i < removedProjectiles.length; i++)
                 delete self._projectiles[removedProjectiles[i]];
 
+            var update = Bison.encode({
+                players: updatePlayers,
+                projectiles: updateProjectiles,
+                removedProjectiles: removedProjectiles
+            });
+
             for (var i = 0; i < self._sockets.length; i++) {
-                self._sockets[i].emit('update', {
-                    players: updatePlayers,
-                    projectiles: updateProjectiles,
-                    removedProjectiles: removedProjectiles
-                });
+                self._sockets[i].emit('update', update);
             }
         }, 1000/Constants.SERVER_FPS);
     }

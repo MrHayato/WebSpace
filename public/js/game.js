@@ -36,6 +36,7 @@ $(document).ready(function() {
     });
 
     socket.on('update', function(message) {
+        message = BISON.decode(message);
         var players = message.players;
         var projectiles = message.projectiles;
         var removedProjectiles = message.removedProjectiles;
