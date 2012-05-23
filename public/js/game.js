@@ -37,9 +37,9 @@ $(document).ready(function() {
 
     socket.on('update', function(message) {
         message = BISON.decode(message);
-        var players = message.players;
-        var projectiles = message.projectiles;
-        var removedProjectiles = message.removedProjectiles;
+        var players = message[0];
+        var projectiles = message[1];
+        var removedProjectiles = message[2];
 
         for (var playerId in players) {
             var playerImage = playersList[playerId];
