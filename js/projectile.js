@@ -9,9 +9,8 @@ module.exports = Projectile = Entity.extend({
         this.id = new Date().getTime();
         this.owner = owner;
         this.damage = damage;
-        this.life = life;
         this.color = color;
-        this._currentLife = 0;
+        this._currentLife = life;
         this._isAlive = true;
 
         this._super(this.id, position, 0, acceleration);
@@ -24,9 +23,9 @@ module.exports = Projectile = Entity.extend({
     update: function() {
         if (!this._isAlive) return;
 
-        this._currentLife++;
-
-        if (this._currentLife >= this.life) {
+        if (this._currentLife > 0) {
+            this._currentLife--;
+        } else {
             this._isAlive = false;
         }
 

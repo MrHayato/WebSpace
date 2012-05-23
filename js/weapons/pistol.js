@@ -1,36 +1,37 @@
-var Projectile = require('../projectile.js'),
+var cls = require('../lib/class'),
+    Projectile = require('../projectile.js'),
     Constants = require('../constants'),
     Utils = require('../utils');
 
-module.exports = function Pistol () {
-    var self = this;
-    this.name = "Pistol";
-    this.rateOfFire = Utils.toTicks(400);
-    this.bulletSpeed = 15;
-    this.damage = 7;
-    this.projectileLife = Utils.toTicks(1000);
-    this.projectileColor = "#ff9999";
-    this.chanceToSpawn = 0;
-
-    this._cooldown = 0;
-
-    this.shoot = function (player) {
-        if (self._cooldown > 0) return [];
+module.exports = Pistol = cls.Class.extend({
+    init: function() {
+        this.name = "Pistol";
+        this.rateOfFire = Utils.toTicks(500);
+        this.bulletSpeed = 15;
+        this.damage = 7;
+        this.projectileLife = Utils.toTicks(1000);
+        this.projectileColor = "#ff9999";
+        this.chanceToSpawn = 0;
+        this._cooldown = 0;
+    },
+    
+    shoot: function (player) {
+        if (this._cooldown > 0) return [];
 
         var velocity = $V([
             Math.cos(player.orientation - Constants.HALF_PI),
             Math.sin(player.orientation - Constants.HALF_PI)
-        ]).toUnitVector().x(self.bulletSpeed);
+        ]).toUnitVector().x(this.bulletSpeed);
 
         var projectile = new Projectile(player.id, player.position, velocity,
-            self.damage, self.projectileLife, self.projectileColor);
+            this.damage, this.projectileLife, this.projectileColor);
 
-        self._cooldown = self.rateOfFire;
+        this._cooldown = this.rateOfFire;
         return [projectile];
-    };
+    },
 
-    this.update = function () {
-        if (self._cooldown > 0)
-            self._cooldown--;
-    };
-};
+    update: function () {
+        if (this._cooldown > 0)
+            this._cooldown--;
+    }
+});

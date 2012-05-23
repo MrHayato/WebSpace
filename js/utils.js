@@ -35,5 +35,5 @@ Utils.clamp = function(min, max, value) {
 };
 
 Utils.toTicks = function (milliseconds) {
-    return milliseconds / Constants.SERVER_FPS;
+    return milliseconds / (1000 / Constants.SERVER_FPS);
 };
