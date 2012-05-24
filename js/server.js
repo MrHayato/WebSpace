@@ -1,6 +1,7 @@
 var cls = require('./lib/class'),
     Bison = require('bison'),
     Constants = require('./constants'),
+    Utils = require('./utils'),
     Player = require('./player');
 
 module.exports = Server = cls.Class.extend({
@@ -11,6 +12,7 @@ module.exports = Server = cls.Class.extend({
         this._projectiles = {};
         this._sockets = [socket];
         this._screenSize = screenSize;
+        this._ticks = 0;
     },
 
     serverJoined: function (socket) {
@@ -36,6 +38,8 @@ module.exports = Server = cls.Class.extend({
             var updateProjectiles = {};
             var removedProjectiles = [];
 
+            self._ticks++;
+
             //Call player update
             for (var playerId in self._players) {
                 var player = self._players[playerId];
@@ -52,17 +56,21 @@ module.exports = Server = cls.Class.extend({
                     removedProjectiles.push(projectileId);
             }
 
-            for (var i = 0; i < removedProjectiles.length; i++)
-                delete self._projectiles[removedProjectiles[i]];
+            if (self._ticks > Utils.toTicks(Constants.SERVER_UPDATE)) {
+                for (var i = 0; i < removedProjectiles.length; i++)
+                    delete self._projectiles[removedProjectiles[i]];
 
-            var update = Bison.encode([
-                updatePlayers,
-                updateProjectiles,
-                removedProjectiles
-            ]);
+                var update = Bison.encode([
+                    updatePlayers,
+                    updateProjectiles,
+                    removedProjectiles
+                ]);
 
-            for (var i = 0; i < self._sockets.length; i++) {
-                self._sockets[i].emit('update', update);
+                for (var i = 0; i < self._sockets.length; i++) {
+                    self._sockets[i].emit('update', update);
+                }
+
+                self._ticks = 0;
             }
         }, 1000/Constants.SERVER_FPS);
     }

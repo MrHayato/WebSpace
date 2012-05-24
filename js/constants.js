@@ -11,3 +11,4 @@ Constants.HALF_PI = Math.PI / 2;
 
 Constants.SERVER_FPS = 50;
 Constants.SERVER_PORT = process.env.PORT || 8899;
+Constants.SERVER_UPDATE = 50;
