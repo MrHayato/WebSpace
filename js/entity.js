@@ -29,21 +29,25 @@ module.exports = Entity = cls.Class.extend({
 
         this.position = this.position.add(this.velocity);
 
-        //Screen wrapping
         if (this._screenSize) {
             if (this.position.e(Constants.X) < 0) {
                 this.position = $V([0, this.position.e(Constants.Y)]);
-                //this.position = $V([this._screenSize.width, this.position.e(Constants.Y)]);
+                this.velocity = $V([0, this.velocity.e(Constants.Y)]);
+                this.acceleration = $V([0, this.acceleration.e(Constants.Y)]);
             } else if (this.position.e(Constants.X) > this._screenSize.width) {
                 this.position = $V([this._screenSize.width, this.position.e(Constants.Y)]);
-                //this.position = $V([0, this.position.e(Constants.Y)]);
+                this.velocity = $V([0, this.velocity.e(Constants.Y)]);
+                this.acceleration = $V([0, this.acceleration.e(Constants.Y)]);
             }
+
             if (this.position.e(Constants.Y) < 0) {
                 this.position = $V([this.position.e(Constants.X), 0]);
-                //this.position = $V([this.position.e(Constants.X), this._screenSize.height]);
+                this.velocity = $V([this.velocity.e(Constants.X), 0]);
+                this.acceleration = $V([this.acceleration.e(Constants.X), 0]);
             } else if (this.position.e(Constants.Y) > this._screenSize.height) {
                 this.position = $V([this.position.e(Constants.X), this._screenSize.height]);
-                //this.position = $V([this.position.e(Constants.X), 0]);
+                this.velocity = $V([this.velocity.e(Constants.X), 0]);
+                this.acceleration = $V([this.acceleration.e(Constants.X), 0]);
             }
         }
 
