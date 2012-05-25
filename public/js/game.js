@@ -90,6 +90,9 @@ $(document).ready(function() {
             if (entity) {
                 var lastFrame = entity.attrs.data.currentFrame;
                 var currentFrame = entityData;
+                //Interoplate from the current position for smoothness
+                lastFrame.position.elements[0] = entity.getX();
+                lastFrame.position.elements[1] = entity.getY();
                 var spline = getSpline(lastFrame, currentFrame, 1 / frames);
 
                 entity.attrs.data = {

@@ -15,11 +15,6 @@ module.exports = Entity = cls.Class.extend({
     },
 
     update: function (ticks) {
-//        if (Utils.vectorMagnitude(this.velocity) < 1) {
-//            this.velocity = $V([0,0]);
-//            return;
-//        }
-
         //calculate the velocity & position
         this.velocity = this.velocity.add(this.acceleration);
 
