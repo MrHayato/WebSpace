@@ -4,27 +4,49 @@ var cls = require('./lib/class'),
     Constants = require('./constants');
 
 module.exports = Entity = cls.Class.extend({
-    init: function(id, position, orientation, acceleration, screenSize) {
+    init: function(id, position, initialVelocity, initialAcceleration, orientation, screenSize) {
         this.id = parseInt(id);
         this.position = position;
+        this.velocity = initialVelocity;
+        this.acceleration = initialAcceleration;
         this.orientation = orientation;
-        this.acceleration = acceleration;
+        this._lastTicks = new Date().getTime();
         this._screenSize = screenSize;
     },
 
-    update: function () {
-        this.position = this.position.add(this.acceleration);
+    update: function (ticks) {
+//        if (Utils.vectorMagnitude(this.velocity) < 1) {
+//            this.velocity = $V([0,0]);
+//            return;
+//        }
+
+        //calculate the velocity & position
+        this.velocity = this.velocity.add(this.acceleration);
+
+        if (Utils.vectorMagnitude(this.velocity) > Constants.PLAYER_MAX_VELOCITY) {
+            this.velocity = this.velocity.toUnitVector().x(Constants.PLAYER_MAX_VELOCITY);
+        }
+
+        this.position = this.position.add(this.velocity);
 
         //Screen wrapping
         if (this._screenSize) {
-            if (this.position.e(Constants.X) < 0)
-                this.position = $V([this._screenSize.width, this.position.e(Constants.Y)]);
-            else if (this.position.e(Constants.X) > this._screenSize.width)
+            if (this.position.e(Constants.X) < 0) {
                 this.position = $V([0, this.position.e(Constants.Y)]);
-            if (this.position.e(Constants.Y) < 0)
-                this.position = $V([this.position.e(Constants.X), this._screenSize.height]);
-            else if (this.position.e(Constants.Y) > this._screenSize.height)
+                //this.position = $V([this._screenSize.width, this.position.e(Constants.Y)]);
+            } else if (this.position.e(Constants.X) > this._screenSize.width) {
+                this.position = $V([this._screenSize.width, this.position.e(Constants.Y)]);
+                //this.position = $V([0, this.position.e(Constants.Y)]);
+            }
+            if (this.position.e(Constants.Y) < 0) {
                 this.position = $V([this.position.e(Constants.X), 0]);
+                //this.position = $V([this.position.e(Constants.X), this._screenSize.height]);
+            } else if (this.position.e(Constants.Y) > this._screenSize.height) {
+                this.position = $V([this.position.e(Constants.X), this._screenSize.height]);
+                //this.position = $V([this.position.e(Constants.X), 0]);
+            }
         }
+
+        this._lastTicks = ticks;
     }
 });

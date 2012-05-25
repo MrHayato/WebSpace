@@ -6,17 +6,17 @@ var cls = require('../lib/class'),
 module.exports = Pistol = cls.Class.extend({
     init: function() {
         this.name = "Pistol";
-        this.rateOfFire = Utils.toTicks(500);
+        this.rateOfFire = 500;
         this.bulletSpeed = 15;
         this.damage = 7;
-        this.projectileLife = Utils.toTicks(1000);
+        this.projectileLife = 1000;
         this.projectileColor = "#ff9999";
         this.chanceToSpawn = 0;
-        this._cooldown = 0;
+        this._lastShot = 0;
     },
     
-    shoot: function (player) {
-        if (this._cooldown > 0) return [];
+    shoot: function (player, ticks) {
+        if (ticks - this._lastShot <= this.rateOfFire) return [];
 
         var velocity = $V([
             Math.cos(player.orientation - Constants.HALF_PI),
@@ -26,12 +26,7 @@ module.exports = Pistol = cls.Class.extend({
         var projectile = new Projectile(player.id, player.position, velocity,
             this.damage, this.projectileLife, this.projectileColor);
 
-        this._cooldown = this.rateOfFire;
+        this._lastShot = ticks;
         return [projectile];
-    },
-
-    update: function () {
-        if (this._cooldown > 0)
-            this._cooldown--;
     }
 });

@@ -33,7 +33,3 @@ Utils.clamp = function(min, max, value) {
         return value;
     }
 };
-
-Utils.toTicks = function (milliseconds) {
-    return milliseconds / (1000 / Constants.SERVER_FPS);
-};

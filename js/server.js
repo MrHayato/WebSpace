@@ -1,18 +1,18 @@
 var cls = require('./lib/class'),
     Bison = require('bison'),
     Constants = require('./constants'),
-    Utils = require('./utils'),
     Player = require('./player');
 
 module.exports = Server = cls.Class.extend({
     init: function (name, screenSize, socket) {
         this.id = parseInt(socket.id);
         this.name = name;
+
         this._players = {};
         this._projectiles = {};
         this._sockets = [socket];
         this._screenSize = screenSize;
-        this._ticks = 0;
+        this._nextUpdate = new Date().getTime();
     },
 
     serverJoined: function (socket) {
@@ -30,48 +30,47 @@ module.exports = Server = cls.Class.extend({
         }
     },
 
+    update: function() {
+        var updateEntities = [];
+        var removeEntities = [];
+        var ticks = new Date().getTime();
+
+        //Call player update
+        for (var playerId in this._players) {
+            var player = this._players[playerId];
+            player.update(ticks);
+            updateEntities.push(player.toJSON());
+        }
+
+        for (var projectileId in this._projectiles) {
+            var projectile = this._projectiles[projectileId];
+            projectile.update(ticks);
+            updateEntities.push(projectile.toJSON());
+
+            if (!projectile.isAlive())
+                removeEntities.push(projectileId);
+        }
+
+        if (ticks >= this._nextUpdate) {
+            for (var i = 0; i < removeEntities.length; i++)
+                delete this._projectiles[removeEntities[i]];
+
+            var update = [
+                ticks,
+                updateEntities,
+                removeEntities
+            ];
+
+            for (var i = 0; i < this._sockets.length; i++) {
+                this._sockets[i].emit('update', update);
+            }
+
+            this._nextUpdate = ticks + Constants.SERVER_UPDATE_INTERVAL;
+        }
+    },
+
     run: function() {
         var self = this;
-
-        setInterval(function() {
-            var updatePlayers = {};
-            var updateProjectiles = {};
-            var removedProjectiles = [];
-
-            self._ticks++;
-
-            //Call player update
-            for (var playerId in self._players) {
-                var player = self._players[playerId];
-                player.update();
-                updatePlayers[player.id] = player.toJSON();
-            }
-
-            for (var projectileId in self._projectiles) {
-                var projectile = self._projectiles[projectileId];
-                projectile.update();
-                updateProjectiles[projectile.id] = projectile.toJSON();
-
-                if (!projectile.isAlive())
-                    removedProjectiles.push(projectileId);
-            }
-
-            if (self._ticks > Utils.toTicks(Constants.SERVER_UPDATE)) {
-                for (var i = 0; i < removedProjectiles.length; i++)
-                    delete self._projectiles[removedProjectiles[i]];
-
-                var update = Bison.encode([
-                    updatePlayers,
-                    updateProjectiles,
-                    removedProjectiles
-                ]);
-
-                for (var i = 0; i < self._sockets.length; i++) {
-                    self._sockets[i].emit('update', update);
-                }
-
-                self._ticks = 0;
-            }
-        }, 1000/Constants.SERVER_FPS);
+        setInterval(function() { self.update(); }, 1000/Constants.SERVER_FPS);
     }
 });
