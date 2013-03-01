@@ -2,6 +2,7 @@ $(document).ready(function() {
     var socket = io.connect('/client');
     var serverId = $("#serverId").val();
     var name = $("#clientName").val();
+    var team = $("#clientTeam").val();
 
     var publish = function(action, message) {
         var obj = {
@@ -37,6 +38,15 @@ $(document).ready(function() {
     });
 
     socket.on('connect', function () {
-        socket.emit('join', { name: name, server: serverId });
+        socket.emit('join', { name: name, team: team, server: serverId });
     });
+
+    socket.on('kill', function () {
+        socket.disconnect();
+    });
+
+    window.onbeforeunload = function () {
+        socket.disconnect();
+    };
+
 });

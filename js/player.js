@@ -6,11 +6,13 @@ var cls = require('./lib/class'),
     Pistol = require('./weapons/pistol');
 
 module.exports = Player = Entity.extend({
-    init: function(socket, server, name, screenSize) {
+    init: function(socket, server, name, team, screenSize) {
         var self = this;
         this.name = name;
         this.weapon = new Pistol();
         this.hp = 100;
+        this.team = team;
+        this.ready = false;
 
         var randomPos = $V([
             Math.random() * screenSize.width,
@@ -22,6 +24,7 @@ module.exports = Player = Entity.extend({
         this._shootPressed = false;
         this._socket = socket;
         this._server = server;
+        this._isAlive = true;
 
         socket.on('move', function(message) {
             if (message.message === "down") {
@@ -44,6 +47,11 @@ module.exports = Player = Entity.extend({
                 self.aim(message.message);
             }
         });
+
+        socket.on('disconnect', function() {
+            console.log(self.name + " disconnected");
+            self.disconnect();
+        });
     },
 
     startShooting: function() {
@@ -52,6 +60,10 @@ module.exports = Player = Entity.extend({
 
     stopShooting: function(){
         this._shootPressed = false;
+    },
+
+    isAlive: function () {
+        return this._isAlive;
     },
 
     aim: function(pos) {
@@ -66,7 +78,24 @@ module.exports = Player = Entity.extend({
         this.acceleration = accel;
     },
 
+    takeDamage: function (damage) {
+        this.hp -= damage;
+
+        if (this.hp <= 0)
+            this._isAlive = false;
+    },
+
+    kill: function () {
+        this._socket.emit('kill');
+    },
+
+    disconnect: function () {
+        this._server.playerDisconnected(this);
+    },
+
     update: function (ticks) {
+        if (!this._isAlive) return;
+
         if (!this._movePressed && Utils.vectorMagnitude(this.velocity) < 1) {
             this.velocity = $V([0,0]);
             this.acceleration = $V([0,0]);
@@ -88,6 +117,7 @@ module.exports = Player = Entity.extend({
             velocity: this.velocity,
             acceleration: this.acceleration,
             orientation: this.orientation,
+            team: this.team,
             type: 'player'
         };
     }

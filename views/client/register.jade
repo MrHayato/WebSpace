@@ -12,6 +12,9 @@ html
         link(rel='stylesheet', href='/css/bootstrap.css')
 
     body
+        div.error.game-started
+            <p>The game has already started. Please wait until the next round.</p>
+
         form#create-form.well.form-horizontal(method='POST', action='/join')
             fieldset
                 legend Create Your Nub
@@ -21,9 +24,15 @@ html
                         input#char-name.input-large(name='char-name', type='text', autocomplete='off')
 
                 div.control-group
-                    label.control-label(for='servers') Servers
+                    label.control-label(for='servers') Select a Server
                     div.controls
                         select#servers.input-large(name='servers', autocomplete='off')
+
+                div.control-group
+                    label.control-label(for='teams') Pick a Team
+                    div.controls
+                        select#teams.input-large(name='teams', autocomplete='off')
+                            option(value='auto') Auto
 
                 div.form-actions
                     input#SubmitForm.btn.btn-primary(type='submit', value='Fight!')

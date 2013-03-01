@@ -107,7 +107,10 @@ $(document).ready(function() {
 
                 switch (entityData.type) {
                     case 'player':
-                        img.src = "/images/spaceship.png";
+                        if (entityData.team === "Red")
+                            img.src = "/images/spaceship_red.png";
+                        else
+                            img.src = "/images/spaceship.png";
                         break;
                     case 'projectile':
                         img.src = "/images/projectile.png";
@@ -142,12 +145,17 @@ $(document).ready(function() {
         }
 
         for (var i = 0; i < removeEntities.length; i++) {
-            var entityId = removeEntities[i];
-            var entity = entities[entityId];
+            var entity = removeEntities[i];
+            var entityId = entity.id;
+            entity = entities[entityId];
             entityLayer.remove(entity);
             delete entities[entityId];
         }
     });
+
+    window.onbeforeunload = function () {
+        socket.disconnect();
+    };
 
     setInterval(draw, fps);
 });
